@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from typing import Union, Literal
 from tqdm import tqdm
 
 
@@ -19,11 +20,11 @@ class PreprocessImage:
 
 
     def __init__(self, 
-                 img_paths: np.ndarray | None, 
-                 output_pixel: int | 224,
-                 padding_ratio: float | 0.9,
-                 path_prefix: str | None, 
-                 include_original : bool | None):
+                 img_paths: Union[np.ndarray, None], 
+                 output_pixel: Union[int, Literal[224]],
+                 padding_ratio: Union[float, Literal[1]],
+                 path_prefix: Union[str, None], 
+                 include_original: Union[bool, None]):
         """
         Preprocesses images for further analysis and feature extraction.
 
@@ -53,6 +54,7 @@ class PreprocessImage:
         self.include_original = include_original
         self.output = []
         img_array = []
+        self.path_prefix = path_prefix
         for path in tqdm(img_paths, desc="Initial Preprocess: Add Padding"):
             if path_prefix is not None:
                 path = f'{path_prefix}/{path}'
@@ -89,7 +91,7 @@ class PreprocessImage:
         # Get the dimensions of the original image
         height, width, _ = image.shape
 
-        unpadded_width = 200
+        unpadded_width = int(self.padding_ratio * self.output_pixel)
 
         # Calculate the scale factor for resizing
         scale = unpadded_width / width
@@ -103,7 +105,7 @@ class PreprocessImage:
         height, width, _ = resized_image.shape
 
         # Define the desired output size
-        desired_size = 224
+        desired_size = self.output_pixel
 
         # Calculate the padding required on each side
         padding_height = (desired_size - height) // 2
@@ -124,7 +126,7 @@ class PreprocessImage:
 
 
     def bw_image(self, 
-                 masked_img: np.ndarray | list | None)  -> np.ndarray :
+                 masked_img: Union[np.ndarray, list, None])  -> np.ndarray :
         """
         Convert images to black and white (BW) and high contrast images.
 
@@ -145,8 +147,8 @@ class PreprocessImage:
 
 
         output = []
-        for idx, image in enumerate(tqdm(self.img_array), 
-                                    desc='Preprocess: Convert to BW & High Contrast Image'):
+        for idx, image in enumerate(tqdm(self.img_array,
+                                         desc='Preprocess: Convert to BW & High Contrast Image')):
             if not idx in masked_img or masked_img is not None:
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, blockSize=11, C=2)
@@ -155,14 +157,14 @@ class PreprocessImage:
 
         output = np.asarray(output)
         if self.include_original:
-            output = np.concatenate((self.img_array, output), axis=1)
+            output = np.concatenate((self.img_array, output), axis=0)
         return output
     
 
 
     def segment_white(self, 
-                      masked_img: np.ndarray | list | None, 
-                      img: np.ndarray | None) -> np.ndarray:
+                      masked_img: Union[np.ndarray, list, None], 
+                      img: Union[np.ndarray, None]) -> np.ndarray:
         
         """
         Segment images based on white regions.
@@ -233,21 +235,21 @@ class PreprocessImage:
             return segment_white_wrapper(img)
         
         output = []
-        for idx, image in enumerate(tqdm(self.img_array), 
-                                    desc='Preprocess: BW Segmented Image'):
+        for idx, image in enumerate(tqdm(self.img_array, 
+                                    desc='Preprocess: BW Segmented Image')):
             if not idx in masked_img or masked_img is not None:
                 gray = segment_white_wrapper(image)
                 output.append(gray)
 
         output = np.asarray(output)
         if self.include_original:
-            output = np.concatenate((self.img_array, output), axis=1)
+            output = np.concatenate((self.img_array, output), axis=0)
         return output
     
 
 
     def segment_number_image(self, 
-                             masked_img: np.ndarray | list | None) -> np.ndarray:
+                             masked_img: Union[np.ndarray, list, None]) -> np.ndarray:
         """
         Segment images containing numbers.
 
@@ -268,8 +270,8 @@ class PreprocessImage:
 
 
         output = []
-        for idx, image in enumerate(tqdm(self.img_array), 
-                                    desc='Preprocess: Segment Number Image'):
+        for idx, image in enumerate(tqdm(self.img_array, 
+                                    desc='Preprocess: Segment Number Image')):
             if not idx in masked_img or masked_img is not None:
                 image = self.segment_white(img = image)
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -294,12 +296,12 @@ class PreprocessImage:
 
         output = np.asarray(output)
         if self.include_original:
-            output = np.concatenate((self.img_array, output), axis=1)
+            output = np.concatenate((self.img_array, output), axis=0)
         return output
 
  
     
-    def gray_image(self, masked_img: np.ndarray | list | None) -> np.ndarray:
+    def gray_image(self, masked_img: Union[np.ndarray, list, None]) -> np.ndarray:
         """
         Convert images to grayscale.
 
@@ -320,17 +322,18 @@ class PreprocessImage:
 
 
         output = []
-        for idx, image in enumerate(tqdm(self.img_array), 
-                                    desc='Preprocess: Convert to Grayscale Image'):
+        for idx, image in enumerate(tqdm(self.img_array, 
+                                    desc='Preprocess: Convert to Grayscale Image')):
             if not idx in masked_img or masked_img is not None:
                 result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 alpha = 1.2  # Contrast factor
                 beta = 0  # Brightness offset
                 result = cv2.convertScaleAbs(result, alpha=alpha, beta=beta)
+                result = cv2.cvtColor(result, cv2.COLOR_GRAY2BGR)
                 output.append(result)
         output = np.asarray(output)
         if self.include_original:
-            output = np.concatenate((self.img_array, output), axis=1)
+            output = np.concatenate((self.img_array, output), axis=0)
         return output
 
 

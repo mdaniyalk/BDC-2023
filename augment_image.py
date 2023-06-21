@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import imgaug.augmenters as iaa
 from tqdm import tqdm 
-from typing import Tuple
+from typing import Tuple, Union
 
 
 class AugmentImage:
@@ -18,11 +18,11 @@ class AugmentImage:
     augmented_images, augmented_labels = augmenter.transform()
     """
 
-    
+
     def __init__(self, 
-                 image_array: np.ndarray | list, 
-                 label_array: np.ndarray | list, 
-                 num_augmentations : int): 
+                 image_array: Union[np.ndarray, list], 
+                 label_array: Union[np.ndarray, list], 
+                 num_augmentations: int):
         """
         Initializes an image augmentation object.
 
@@ -55,7 +55,9 @@ class AugmentImage:
             iaa.Multiply((0.8, 1.2)),  # Multiply pixel values by a random value between 0.8 and 1.2
             iaa.ContrastNormalization((0.8, 1.2)),  # Apply contrast normalization to the image
             iaa.MultiplyHueAndSaturation((0.8, 1.2), per_channel=True),  # Multiply hue and saturation by a random value
-            iaa.Affine(shear=(-15, 15))  # Add skewing with shear transformation
+            iaa.Affine(shear=(-15, 15)),  # Add skewing with shear transformation
+            iaa.AdditiveLaplaceNoise(scale=(0, 0.025 * 255)),  # Additional noise
+            iaa.GammaContrast(gamma=(0.8, 1.2)),  # Random gamma and contrast adjustment
             ])
         self.output_images = []
         self.output_labels = []

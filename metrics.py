@@ -1,8 +1,11 @@
 import numpy as np
 import tensorflow as tf
 import warnings
+from typing import Literal
 
-def character_accuracy_np(y_true, y_pred):
+
+
+def character_accuracy_np(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     Calculate the character-based accuracy using NumPy.
 
@@ -14,10 +17,15 @@ def character_accuracy_np(y_true, y_pred):
         float: Character-based accuracy.
 
     """
+
+    
     accuracy = np.mean([np.mean(y_true[i] == y_pred[i]) for i in range(len(y_true))])
     return accuracy
 
-def character_accuracy_tf(y_true, y_pred):
+
+
+
+def character_accuracy_tf(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """
     Calculate the character-based accuracy using TensorFlow.
 
@@ -29,13 +37,19 @@ def character_accuracy_tf(y_true, y_pred):
         tensorflow.Tensor: Character-based accuracy.
 
     """
+
+
     y_true_flat = tf.reshape(y_true, [-1])
     y_pred_flat = tf.reshape(y_pred, [-1])
 
     accuracy = tf.reduce_mean(tf.cast(tf.equal(y_true_flat, y_pred_flat), tf.float32))
     return accuracy
 
-def character_accuracy(y_true, y_pred, lib='tf'):
+
+
+def character_accuracy(y_true: np.ndarray | tf.Tensor, 
+                       y_pred: np.ndarray | tf.Tensor, 
+                       lib: Literal['tf', 'np']) -> tf.Tensor:
     """
     Calculate the character-based accuracy.
     Tensorflow based function (lib='tf') should be used in model training.
@@ -43,7 +57,7 @@ def character_accuracy(y_true, y_pred, lib='tf'):
     Parameters:
         y_true (numpy.ndarray or tensorflow.Tensor): Ground truth labels.
         y_pred (numpy.ndarray or tensorflow.Tensor): Predicted labels.
-        lib (str, optional): Library type to use ('tf' for TensorFlow, 'np' for NumPy). Default is 'tf'.
+        lib (Literal['tf', 'np']): Library type to use ('tf' for TensorFlow, 'np' for NumPy). Default is 'tf'.
 
     Returns:
         float or tensorflow.Tensor: Character-based accuracy.
@@ -52,6 +66,8 @@ def character_accuracy(y_true, y_pred, lib='tf'):
         UserWarning: If an unknown library type is selected.
 
     """
+
+
     if lib == 'tf':
         return character_accuracy_tf(y_true, y_pred)
     elif lib == 'np':
