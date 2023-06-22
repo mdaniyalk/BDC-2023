@@ -83,9 +83,9 @@ class AugmentImage:
 
 
         for idx, image in enumerate(tqdm(self.image_array, desc='Augement Images')):
-            self.output_images.append(image)
+            # self.output_images.append(image)
             label = self.label_array[idx]
-            self.output_labels.append(label)
+            # self.output_labels.append(label)
             for _ in range(self.num_augmentations):
                 # Apply augmentation to the image
                 augmented_image = self.augmenter.augment_image(image)

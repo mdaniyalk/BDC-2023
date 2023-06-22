@@ -273,7 +273,7 @@ class PreprocessImage:
         for idx, image in enumerate(tqdm(self.img_array, 
                                     desc='Preprocess: Segment Number Image')):
             if not idx in masked_img or masked_img is not None:
-                image = self.segment_white(img = image)
+                image = self.segment_white(img = image, masked_img=None)
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 blur = cv2.GaussianBlur(gray, (5, 5), 0)
                 _, binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)

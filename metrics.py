@@ -18,7 +18,20 @@ def character_accuracy_np(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     """
 
-    
+    for id in range(len(y_true)):
+        if len(y_true[id]) < 9:
+            pad_length = 9 - len(y_true[id])
+            y_true[id] = np.append(y_true[id], ["[PAD]"] * pad_length)
+        elif len(y_true[id]) > 9:
+            y_true[id] = y_true[id][:9]
+
+    for id in range(len(y_pred)):
+        if len(y_pred[id]) < 9:
+            pad_length = 9 - len(y_pred[id])
+            y_pred[id] = np.append(y_pred[id], ["[PAD]"] * pad_length)
+        elif len(y_pred[id]) > 9:
+            y_pred[id] = y_pred[id][:9]
+
     accuracy = np.mean([np.mean(y_true[i] == y_pred[i]) for i in range(len(y_true))])
     return accuracy
 
