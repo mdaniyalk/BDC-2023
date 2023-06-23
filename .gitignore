@@ -1,2 +1,3 @@
 *.pyc
 manual_inspection
+Fine_tune_TrOCR_on_IAM_Handwriting_Database_using_native_PyTorch.ipynb
