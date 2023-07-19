@@ -3,6 +3,7 @@ import numpy as np
 import imgaug.augmenters as iaa
 from tqdm import tqdm 
 from typing import Tuple, Union
+import random
 
 
 class AugmentImage:
@@ -49,15 +50,15 @@ class AugmentImage:
         self.label_array = label_array
         self.num_augmentations = num_augmentations
         self.augmenter = iaa.Sequential([
-            iaa.Affine(rotate=(-20, 20)),  # Rotate the image by a random angle between -10 and 10 degrees
-            iaa.GaussianBlur(sigma=(0, 1.0)),  # Apply random Gaussian blur with a sigma between 0 and 1.0
-            iaa.AdditiveGaussianNoise(scale=(0, 0.02 * 255)),  # Add random Gaussian noise to the image
-            iaa.Multiply((0.8, 1.2)),  # Multiply pixel values by a random value between 0.8 and 1.2
-            iaa.ContrastNormalization((0.8, 1.2)),  # Apply contrast normalization to the image
-            iaa.MultiplyHueAndSaturation((0.8, 1.2), per_channel=True),  # Multiply hue and saturation by a random value
+            iaa.Affine(rotate=(-25, 25)),  # Rotate the image by a random angle between -10 and 10 degrees
+            iaa.GaussianBlur(sigma=(0, 2)),  # Apply random Gaussian blur with a sigma between 0 and 1.0
+            iaa.AdditiveGaussianNoise(scale=(0, 0.015 * 255)),  # Add random Gaussian noise to the image
+            iaa.Multiply((0.8, 1.1)),  # Multiply pixel values by a random value between 0.8 and 1.2
+            iaa.ContrastNormalization((0.9, 1.1)),  # Apply contrast normalization to the image
+            iaa.MultiplyHueAndSaturation((0.9, 1.1), per_channel=True),  # Multiply hue and saturation by a random value
             iaa.Affine(shear=(-15, 15)),  # Add skewing with shear transformation
-            iaa.AdditiveLaplaceNoise(scale=(0, 0.025 * 255)),  # Additional noise
-            iaa.GammaContrast(gamma=(0.8, 1.2)),  # Random gamma and contrast adjustment
+            iaa.AdditiveLaplaceNoise(scale=(0, 0.015 * 255)),  # Additional noise
+            iaa.GammaContrast(gamma=(0.9, 1.1)),  # Random gamma and contrast adjustment
             ])
         self.output_images = []
         self.output_labels = []
@@ -82,13 +83,21 @@ class AugmentImage:
         """
 
 
-        for idx, image in enumerate(tqdm(self.image_array, desc='Augement Images')):
+        for idx, image in enumerate(tqdm(self.image_array, desc='Augment Images')):
             # self.output_images.append(image)
             label = self.label_array[idx]
             # self.output_labels.append(label)
+            if self.num_augmentations == 0:
+                gray = True
+            else:
+                gray = False
             for _ in range(self.num_augmentations):
                 # Apply augmentation to the image
                 augmented_image = self.augmenter.augment_image(image)
+                rand = random.randint(1, self.num_augmentations*self.num_augmentations)
+                if rand % self.num_augmentations == 0 or (gray == False and _ == 0):
+                    augmented_image = self.grayscale_img(augmented_image)
+                    gray = True
                 # Append the augmented image and its corresponding label to the lists
                 self.output_images.append(augmented_image)
                 self.output_labels.append(label)
@@ -96,5 +105,14 @@ class AugmentImage:
         self.output_images = np.asarray(self.output_images)
         self.output_labels = np.asarray(self.output_labels)
         return self.output_images, self.output_labels
+    
+
+    def grayscale_img(self, image):
+        result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        alpha = 1.2  # Contrast factor
+        beta = 0  # Brightness offset
+        result = cv2.convertScaleAbs(result, alpha=alpha, beta=beta)
+        result = cv2.cvtColor(result, cv2.COLOR_GRAY2BGR)
+        return result
         
         

@@ -34,6 +34,7 @@ def character_accuracy_np(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
     accuracy = np.mean([np.mean(y_true[i] == y_pred[i]) for i in range(len(y_true))])
     return accuracy
+    
 
 
 

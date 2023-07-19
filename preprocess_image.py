@@ -126,7 +126,8 @@ class PreprocessImage:
 
 
     def bw_image(self, 
-                 masked_img: Union[np.ndarray, list, None])  -> np.ndarray :
+                 masked_img: Union[np.ndarray, list, None],
+                 sampling_ratio = None)  -> np.ndarray :
         """
         Convert images to black and white (BW) and high contrast images.
 
@@ -149,7 +150,7 @@ class PreprocessImage:
         output = []
         for idx, image in enumerate(tqdm(self.img_array,
                                          desc='Preprocess: Convert to BW & High Contrast Image')):
-            if not idx in masked_img or masked_img is not None:
+            if not idx in masked_img and masked_img is not None:
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, blockSize=11, C=2)
                 img_gray = cv2.cvtColor(binary, cv2.COLOR_GRAY2RGB)
@@ -237,7 +238,7 @@ class PreprocessImage:
         output = []
         for idx, image in enumerate(tqdm(self.img_array, 
                                     desc='Preprocess: BW Segmented Image')):
-            if not idx in masked_img or masked_img is not None:
+            if not idx in masked_img and masked_img is not None:
                 gray = segment_white_wrapper(image)
                 output.append(gray)
 
@@ -272,7 +273,7 @@ class PreprocessImage:
         output = []
         for idx, image in enumerate(tqdm(self.img_array, 
                                     desc='Preprocess: Segment Number Image')):
-            if not idx in masked_img or masked_img is not None:
+            if not idx in masked_img and masked_img is not None:
                 image = self.segment_white(img = image, masked_img=None)
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -324,7 +325,7 @@ class PreprocessImage:
         output = []
         for idx, image in enumerate(tqdm(self.img_array, 
                                     desc='Preprocess: Convert to Grayscale Image')):
-            if not idx in masked_img or masked_img is not None:
+            if not idx in masked_img and masked_img is not None:
                 result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 alpha = 1.2  # Contrast factor
                 beta = 0  # Brightness offset
